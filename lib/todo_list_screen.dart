@@ -13,10 +13,10 @@ class TodoListScreen extends StatefulWidget {
 class TodoListScreenState extends State<TodoListScreen> {
   final List<TodoItem> _todoItems = [];
 
-  void _addTodoItem(String task, String? description) {
+  void _addTodoItem(String task, String? description, Color color) {
     if (task.isNotEmpty) {
       setState(() {
-        _todoItems.add(TodoItem(task: task, description: description));
+        _todoItems.add(TodoItem(task: task, description: description, color: Colors.blue));
       });
     }
   }
@@ -28,6 +28,7 @@ class TodoListScreenState extends State<TodoListScreen> {
           task: newTask,
           description: newDescription,
           completed: _todoItems[index].completed,
+          color: _todoItems[index].color,
         );
       });
     }
@@ -72,41 +73,102 @@ class TodoListScreenState extends State<TodoListScreen> {
   }
 
   Widget _buildTodoList() {
-    return ListView.builder(
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // Determine the number of columns based on screen width
+    int columns;
+    if (screenWidth > 1200) {
+      columns = 4;
+    } else if (screenWidth > 800) {
+      columns = 3;
+    } else {
+      columns = 2;
+    }
+
+    // Determine the text size based on screen height
+    double titleFontSize;
+    double descriptionFontSize;
+    if (screenHeight > 1200) {
+      titleFontSize = 20.0;
+      descriptionFontSize = 16.0;
+    } else if (screenHeight > 800) {
+      titleFontSize = 18.0;
+      descriptionFontSize = 14.0;
+    } else {
+      titleFontSize = 16.0;
+      descriptionFontSize = 12.0;
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(8.0),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: columns, // Number of columns
+        crossAxisSpacing: 8.0,
+        mainAxisSpacing: 8.0,
+        childAspectRatio: 1, // To make the cards square
+      ),
       itemCount: _todoItems.length,
       itemBuilder: (context, index) {
-        return _buildTodoItem(_todoItems[index], index);
+        return _buildTodoItem(_todoItems[index], index, titleFontSize, descriptionFontSize);
       },
     );
   }
 
-  Widget _buildTodoItem(TodoItem todoItem, int index) {
-    return ListTile(
-      title: Text(
-        todoItem.task,
-        style: TextStyle(
-          decoration: todoItem.completed ? TextDecoration.lineThrough : null,
+  Widget _buildTodoItem(TodoItem todoItem, int index, double titleFontSize, double descriptionFontSize) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      elevation: 4.0,
+      color: todoItem.color,
+      child: InkWell(
+        onTap: () => _pushEditTodoScreen(index),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                todoItem.task,
+                style: TextStyle(
+                  fontSize: titleFontSize,
+                  fontWeight: FontWeight.bold,
+                  decoration: todoItem.completed ? TextDecoration.lineThrough : null,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: Text(
+                  todoItem.description ?? '',
+                  style: TextStyle(
+                    fontSize: descriptionFontSize,
+                    color: Colors.grey[700],
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 3, // Limits the text to 3 lines
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Checkbox(
+                    shape: const CircleBorder(),
+                    activeColor: Theme.of(context).primaryColor,
+                    value: todoItem.completed,
+                    onChanged: (bool? value) {
+                      _toggleTodoItem(index);
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                    onPressed: () => _deleteTodoItem(index),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
-      subtitle: todoItem.description != null ? Text(todoItem.description!) : null,
-      leading: Checkbox(
-        value: todoItem.completed,
-        onChanged: (bool? value) {
-          _toggleTodoItem(index);
-        },
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () => _pushEditTodoScreen(index),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () => _deleteTodoItem(index),
-          ),
-        ],
       ),
     );
   }

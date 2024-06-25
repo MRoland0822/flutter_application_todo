@@ -49,13 +49,15 @@ class _EditTodoScreenState extends State<EditTodoScreen> {
               controller: _titleController,
               decoration: const InputDecoration(
                 labelText: 'Title',
+                border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             TextField(
               controller: _descriptionController,
               decoration: const InputDecoration(
                 labelText: 'Description',
+                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),

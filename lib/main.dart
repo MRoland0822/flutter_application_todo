@@ -14,6 +14,18 @@ class MyApp extends StatelessWidget {
       title: 'Flutter TODO App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        textTheme: const TextTheme(
+          headlineMedium: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)
+          ),
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(),
+          contentPadding: EdgeInsets.all(16.0),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.all(16.0),
+          ),
+        )
       ),
       home: const TodoListScreen(),
     );

@@ -11,24 +11,44 @@ class TodoListScreen extends StatefulWidget {
 }
 
 class TodoListScreenState extends State<TodoListScreen> {
-  final List<TodoItem> _todoItems = [];
+  final List<TodoItem> _todoItems = [
+    TodoItem(
+      task: 'Buy groceries',
+      description: 'Milk, Bread, Eggs, Butter',
+      color: Colors.red,
+    ),
+    TodoItem(
+      task: 'Call John',
+      description: 'Discuss the new project requirements',
+      color: Colors.green,
+    ),
+    TodoItem(
+      task: 'Walk the dog',
+      description: 'Evening walk in the park',
+      color: Colors.blue,
+    ),
+  ];
 
   void _addTodoItem(String task, String? description, Color color) {
     if (task.isNotEmpty) {
       setState(() {
-        _todoItems.add(TodoItem(task: task, description: description, color: Colors.blue));
+        _todoItems.add(TodoItem(
+          task: task,
+          description: description,
+          color: color,
+          ));
       });
     }
   }
 
-  void _editTodoItem(int index, String newTask, String newDescription) {
+  void _editTodoItem(int index, String newTask, String newDescription, Color newColor) {
     if (newTask.isNotEmpty) {
       setState(() {
         _todoItems[index] = TodoItem(
           task: newTask,
           description: newDescription,
           completed: _todoItems[index].completed,
-          color: _todoItems[index].color,
+          color: newColor,
         );
       });
     }
@@ -63,8 +83,9 @@ class TodoListScreenState extends State<TodoListScreen> {
           return EditTodoScreen(
             initialTitle: _todoItems[index].task,
             initialDescription: _todoItems[index].description ?? '',
-            updateTodoItem: (newTask, newDescription) {
-              _editTodoItem(index, newTask, newDescription);
+            initialColor: _todoItems[index].color,
+            updateTodoItem: (newTask, newDescription, newColor) {
+              _editTodoItem(index, newTask, newDescription, newColor);
             },
           );
         },

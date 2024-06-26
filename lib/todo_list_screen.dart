@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'todo_item.dart';
 import 'add_todo_screen.dart';
 import 'edit_todo_screen.dart';
@@ -13,35 +14,39 @@ class TodoListScreen extends StatefulWidget {
 class TodoListScreenState extends State<TodoListScreen> {
   final List<TodoItem> _todoItems = [
     TodoItem(
-      task: 'Buy groceries',
-      description: 'Milk, Bread, Eggs, Butter',
+      task: 'Sample Task 1',
+      description: 'This is a sample task',
       color: Colors.red,
+      startDate: DateTime.now(),
+      endDate: DateTime.now().add(const Duration(hours: 1)),
+      allDay: false,
     ),
     TodoItem(
-      task: 'Call John',
-      description: 'Discuss the new project requirements',
+      task: 'Sample Task 2',
+      description: 'This is another sample task',
       color: Colors.green,
-    ),
-    TodoItem(
-      task: 'Walk the dog',
-      description: 'Evening walk in the park',
-      color: Colors.blue,
+      startDate: DateTime.now(),
+      endDate: DateTime.now().add(const Duration(hours: 2)),
+      allDay: true,
     ),
   ];
 
-  void _addTodoItem(String task, String? description, Color color) {
+  void _addTodoItem(String task, String? description, Color color, DateTime startDate, DateTime endDate, bool allDay) {
     if (task.isNotEmpty) {
       setState(() {
         _todoItems.add(TodoItem(
           task: task,
           description: description,
           color: color,
+          startDate: startDate,
+          endDate: endDate,
+          allDay: allDay,
           ));
       });
     }
   }
 
-  void _editTodoItem(int index, String newTask, String newDescription, Color newColor) {
+  void _editTodoItem(int index, String newTask, String newDescription, Color newColor, DateTime newStartDate, DateTime newEndDate, bool newAllDay) {
     if (newTask.isNotEmpty) {
       setState(() {
         _todoItems[index] = TodoItem(
@@ -49,6 +54,9 @@ class TodoListScreenState extends State<TodoListScreen> {
           description: newDescription,
           completed: _todoItems[index].completed,
           color: newColor,
+          startDate: newStartDate,
+          endDate: newEndDate,
+          allDay: newAllDay,
         );
       });
     }
@@ -84,8 +92,11 @@ class TodoListScreenState extends State<TodoListScreen> {
             initialTitle: _todoItems[index].task,
             initialDescription: _todoItems[index].description ?? '',
             initialColor: _todoItems[index].color,
-            updateTodoItem: (newTask, newDescription, newColor) {
-              _editTodoItem(index, newTask, newDescription, newColor);
+            initialStartDate: _todoItems[index].startDate,
+            initialEndDate: _todoItems[index].endDate,
+            initialAllDay: _todoItems[index].allDay,
+            updateTodoItem: (newTask, newDescription, newColor, newStartDate, newEndDate, newAllDay) {
+              _editTodoItem(index, newTask, newDescription, newColor, newStartDate, newEndDate, newAllDay);
             },
           );
         },
@@ -136,63 +147,79 @@ class TodoListScreenState extends State<TodoListScreen> {
     );
   }
 
-  Widget _buildTodoItem(TodoItem todoItem, int index, double titleFontSize, double descriptionFontSize) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.0),
-      ),
-      elevation: 4.0,
-      color: todoItem.color,
-      child: InkWell(
-        onTap: () => _pushEditTodoScreen(index),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                todoItem.task,
+ Widget _buildTodoItem(TodoItem todoItem, int index, double titleFontSize, double descriptionFontSize) {
+  return Card(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(15.0),
+    ),
+    elevation: 4.0,
+    color: todoItem.color, // Use the color from the todo item
+    child: InkWell(
+      onTap: () => _pushEditTodoScreen(index),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              todoItem.task,
+              style: TextStyle(
+                fontSize: titleFontSize + 4, // Increase title font size
+                fontWeight: FontWeight.bold,
+                color: Colors.white, // Ensure good contrast
+                decoration: todoItem.completed ? TextDecoration.lineThrough : null,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: Text(
+                todoItem.description ?? '',
                 style: TextStyle(
-                  fontSize: titleFontSize,
-                  fontWeight: FontWeight.bold,
-                  decoration: todoItem.completed ? TextDecoration.lineThrough : null,
+                  fontSize: descriptionFontSize + 2, // Increase description font size
+                  color: Colors.white70, // Ensure good contrast
                 ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 3,
               ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: Text(
-                  todoItem.description ?? '',
-                  style: TextStyle(
-                    fontSize: descriptionFontSize,
-                    color: Colors.grey[700],
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 3, // Limits the text to 3 lines
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Start: ${DateFormat('MMM d, h:mm a').format(todoItem.startDate)}',
+              style: const TextStyle(fontSize: 14, color: Colors.white70), // Increase date font size and color contrast
+            ),
+            Text(
+              'End: ${DateFormat('MMM d, h:mm a').format(todoItem.endDate)}',
+              style: const TextStyle(fontSize: 14, color: Colors.white70), // Increase date font size and color contrast
+            ),
+            if (todoItem.allDay)
+              const Text(
+                'All Day',
+                style: TextStyle(fontSize: 14, color: Colors.white70), // Increase font size and color contrast
+              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Checkbox(
+                  shape: const CircleBorder(),
+                  activeColor: Theme.of(context).primaryColor,
+                  value: todoItem.completed,
+                  onChanged: (bool? value) {
+                    _toggleTodoItem(index);
+                  },
                 ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Checkbox(
-                    shape: const CircleBorder(),
-                    activeColor: Theme.of(context).primaryColor,
-                    value: todoItem.completed,
-                    onChanged: (bool? value) {
-                      _toggleTodoItem(index);
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.redAccent),
-                    onPressed: () => _deleteTodoItem(index),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                  onPressed: () => _deleteTodoItem(index),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
